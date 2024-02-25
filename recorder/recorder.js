@@ -1,4 +1,5 @@
 const path = require('path');
+const axios = require('axios');
 const mysql = require('mysql2/promise');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
@@ -9,7 +10,7 @@ const pool = mysql.createPool({
   database: process.env.DB_DATABASE,
 });
 
-if (require.main === module) record(process.argv[2]);
+// if (require.main === module) record(process.argv[2]);
 
 const getBaseURL = url => url.split('playlist.m3u8')[0]
 const getQueryURL = url => url.split('/')[0];
@@ -31,20 +32,18 @@ async function record(channelID) {
         const isOk = await getVfragChunklist(vChunklistURL);
         if (!isOk) abortFlag = true;
       }
-      console.log(channelID, 'Vfrag Record Ended');
     })(),
     (async () => {
       while (!abortFlag) {
         const isOk = await getAfragChunklist(aChunklistURL);
         if (!isOk) abortFlag = true;
       }
-      console.log(channelID, 'Afrag Record Ended');
     })(),
   ]);
 }
 
 async function getPlaylistURL(channelID) {
-  const liveDetail = await fetch(`https://api.chzzk.naver.com/service/v2/channels/${channelID}/live-detail`).then(res => res.json());
+  const liveDetail = await axios.get(`https://api.chzzk.naver.com/service/v2/channels/${channelID}/live-detail`).then(res => res.data);
   const livePlaybackJson = liveDetail.content.livePlaybackJson;
   const livePlayback = JSON.parse(livePlaybackJson);
   const media = livePlayback.media.find(({ mediaId }) => mediaId === 'LLHLS');
@@ -52,7 +51,7 @@ async function getPlaylistURL(channelID) {
 }
 
 async function getPlaylist(playlistUrl) {
-  const playlist = await fetch(playlistUrl).then(res => res.text());
+  const playlist = await axios.get(playlistUrl).then(res => res.data);
   const lines = playlist.split('\n');
 
   const vChunklistURLIndex = lines.findIndex(line => line.startsWith('#EXT-X-STREAM-INF:'));
@@ -96,12 +95,14 @@ function getChunklistFP(type, channelID, baseURL, queryURL) {
 
 
 async function getFragments(url, baseURL) {
-  const res = await fetch(baseURL + url);
-  if (!res.ok) {
-    console.log(res);
-    return undefined;
-  }
-  const m3u8 = await res.text();
+  const m3u8 = await axios
+    .get(baseURL + url)
+    .then(res => res.data)
+    .catch(err => {
+      console.log(err);
+      return undefined;
+    });
+  if (m3u8 === undefined) return undefined;
   const lines = m3u8.split('\n');
 
   const fragments = lines

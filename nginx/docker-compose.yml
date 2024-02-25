@@ -2,6 +2,7 @@ version: "3"
 
 services:
   nginx:
+    container_name: nginx
     image: nginx
     network_mode: host
     volumes:

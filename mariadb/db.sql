@@ -2,6 +2,8 @@
 
 CREATE DATABASE chzzk_replay;
 
+USE chzzk_replay;
+
 CREATE TABLE `channel` (
   `id` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
