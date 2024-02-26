@@ -10,9 +10,9 @@ const pool = mysql.createPool({
   database: process.env.DB_DATABASE,
 });
 
-// if (require.main === module) record(process.argv[2]);
+if (require.main === module) record(process.argv[2]);
 
-const getBaseURL = url => url.split('playlist.m3u8')[0]
+const getBaseURL = url => url.split('hls_playlist.m3u8')[0]
 const getQueryURL = url => url.split('/')[0];
 
 async function record(channelID) {
@@ -24,8 +24,8 @@ async function record(channelID) {
 
   const getVfragChunklist = getChunklistFP('vfrag', channelID, baseURL, queryURL);
   const getAfragChunklist = getChunklistFP('afrag', channelID, baseURL, queryURL);
-  let abortFlag = false;
 
+  let abortFlag = false;
   await Promise.all([
     (async () => {
       while (!abortFlag) {
@@ -46,7 +46,7 @@ async function getPlaylistURL(channelID) {
   const liveDetail = await axios.get(`https://api.chzzk.naver.com/service/v2/channels/${channelID}/live-detail`).then(res => res.data);
   const livePlaybackJson = liveDetail.content.livePlaybackJson;
   const livePlayback = JSON.parse(livePlaybackJson);
-  const media = livePlayback.media.find(({ mediaId }) => mediaId === 'LLHLS');
+  const media = livePlayback.media.find(({ mediaId }) => mediaId === 'HLS');
   return media.path;
 }
 
