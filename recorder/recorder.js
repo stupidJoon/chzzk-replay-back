@@ -17,6 +17,7 @@ const getQueryURL = url => url.split('/')[0];
 
 async function record(channelID) {
   const playlistURL = await getPlaylistURL(channelID);
+  if (playlistURL === undefined) { console.log(channelID, 'Playlist URL FAILED'); return; }
   const { playlist, vChunklistURL, aChunklistURL } = await getPlaylist(playlistURL);
 
   const baseURL = getBaseURL(playlistURL);
@@ -47,7 +48,7 @@ async function getPlaylistURL(channelID) {
   const livePlaybackJson = liveDetail.content.livePlaybackJson;
   const livePlayback = JSON.parse(livePlaybackJson);
   const media = livePlayback.media.find(({ mediaId }) => mediaId === 'HLS');
-  return media.path;
+  return media?.path;
 }
 
 async function getPlaylist(playlistUrl) {

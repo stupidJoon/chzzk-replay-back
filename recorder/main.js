@@ -12,9 +12,6 @@ const pool = mysql.createPool({
 });
 
 const getLives = () => axios.get('https://api.chzzk.naver.com/service/v1/lives?sortType=POPULAR').then(res => res.data);
-const getChannelID = (lives) => lives.content.data
-  .filter(live => !live.adult)
-  .map(live => live.channel.channelId);
 
 main();
 
@@ -25,7 +22,7 @@ async function main() {
 
 async function test() {
   const json = await getLives();
-  const lives = json.content.data.slice(0, 10);
+  const lives = json.content.data.slice(0, 20);
   const availableLives = lives.filter(live => !live.adult);
 
   const [currentLives] = await pool.query('SELECT (id) FROM channel');
@@ -49,6 +46,4 @@ async function test() {
       console.log(channelId, 'Stream Ended');
     });
   }
-
-  return newLives;
 }

@@ -7,7 +7,7 @@ USE chzzk_replay;
 CREATE TABLE `channel` (
   `id` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `profile` varchar(500) NOT NULL,
+  `profile` varchar(500),
   `live_title` varchar(255) NOT NULL,
   `live_image` varchar(500) NOT NULL,
   PRIMARY KEY (`id`),
@@ -29,3 +29,5 @@ CREATE TABLE `fragment` (
   KEY `channel_id` (`channel_id`),
   CONSTRAINT `channel_id` FOREIGN KEY (`channel_id`) REFERENCES `channel` (`id`) ON DELETE CASCADE
 );
+
+ALTER TABLE channel MODIFY COLUMN profile varchar(500);
