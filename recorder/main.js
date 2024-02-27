@@ -42,6 +42,10 @@ async function test() {
 
 
     record(channelId).then(() => {
+      console.log(channelId, 'Safe Stream Ended');
+    }).catch(err => {
+      console.log(channelId, err);
+    }).finally(() => {
       pool.query('DELETE FROM channel WHERE id=?', [channelId]);
       console.log(channelId, 'Stream Ended');
     });

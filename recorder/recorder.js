@@ -15,10 +15,11 @@ if (require.main === module) record(process.argv[2]);
 const getBaseURL = url => url.split('hls_playlist.m3u8')[0]
 const getQueryURL = url => url.split('/')[0];
 
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 async function record(channelID) {
   const playlistURL = await getPlaylistURL(channelID);
-  if (playlistURL === undefined) { console.log(channelID, 'Playlist URL FAILED'); return; }
-  const { playlist, vChunklistURL, aChunklistURL } = await getPlaylist(playlistURL);
+  const { vChunklistURL, aChunklistURL } = await getPlaylist(playlistURL);
 
   const baseURL = getBaseURL(playlistURL);
   const queryURL = getQueryURL(vChunklistURL);
@@ -32,12 +33,14 @@ async function record(channelID) {
       while (!abortFlag) {
         const isOk = await getVfragChunklist(vChunklistURL);
         if (!isOk) abortFlag = true;
+        await sleep(3000);
       }
     })(),
     (async () => {
       while (!abortFlag) {
         const isOk = await getAfragChunklist(aChunklistURL);
         if (!isOk) abortFlag = true;
+        await sleep(3000);
       }
     })(),
   ]);
@@ -48,7 +51,7 @@ async function getPlaylistURL(channelID) {
   const livePlaybackJson = liveDetail.content.livePlaybackJson;
   const livePlayback = JSON.parse(livePlaybackJson);
   const media = livePlayback.media.find(({ mediaId }) => mediaId === 'HLS');
-  return media?.path;
+  return media.path;
 }
 
 async function getPlaylist(playlistUrl) {
@@ -58,10 +61,10 @@ async function getPlaylist(playlistUrl) {
   const vChunklistURLIndex = lines.findIndex(line => line.startsWith('#EXT-X-STREAM-INF:'));
   const vChunklistURL = lines[vChunklistURLIndex + 1];
   const aChunklistURL = vChunklistURL.replace('vfrag1080p', 'afrag1080p');
-  return { playlist, vChunklistURL, aChunklistURL };
+  return { vChunklistURL, aChunklistURL };
 }
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 
 function getChunklistFP(type, channelID, baseURL, queryURL) {
   let fragments = [];
@@ -81,14 +84,12 @@ function getChunklistFP(type, channelID, baseURL, queryURL) {
           [newFragments.map(({ url, datetime, extinf }) => [channelID, url, type, datetime, extinf])],
         );
       } catch (err) {
-        console.log(`ERROR!!-${new Date()}-${channelID}:${type}:${newFragments.length}:${prevFragments}`); // log
+        console.log(`INSERT ERROR!!-${new Date()}-${channelID}:${type}:${newFragments.length}:${prevFragments}`); // log
         console.log(err);
       }
     }
 
     console.log(`${new Date()}-${channelID}:${type}:${newFragments.length}`); // log
-
-    await sleep(3000);
 
     return true;
   };
@@ -115,7 +116,6 @@ async function getFragments(url, baseURL) {
       return [...acc, { url, datetime, extinf }];
     }, []);
 
-	if (fragments.length === 0) console.log(m3u8); // test
   return fragments;
 }
 
