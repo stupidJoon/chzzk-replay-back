@@ -38,7 +38,10 @@ async function record(channelID) {
 }
 
 async function getPlaylistURL(channelID) {
-  const liveDetail = await axios.get(`https://api.chzzk.naver.com/service/v2/channels/${channelID}/live-detail`).then(res => res.data);
+  const liveDetail = await axios.get(
+    `https://api.chzzk.naver.com/service/v2/channels/${channelID}/live-detail`,
+    { headers: { 'User-Agent': 'Mozilla' } },
+  ).then(res => res.data);
   const livePlaybackJson = liveDetail.content.livePlaybackJson;
   const livePlayback = JSON.parse(livePlaybackJson);
   const media = livePlayback.media.find(({ mediaId }) => mediaId === 'HLS');
