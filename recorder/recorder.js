@@ -1,14 +1,5 @@
-const path = require('path');
 const axios = require('axios');
-const mysql = require('mysql2/promise');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
-
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
-});
+const pool = require('./db.js');
 
 if (require.main === module) record(process.argv[2]);
 
@@ -33,14 +24,14 @@ async function record(channelID) {
       while (!abortFlag) {
         const isOk = await getVfragChunklist(vChunklistURL);
         if (!isOk) abortFlag = true;
-        await sleep(3000);
+        await sleep(2000);
       }
     })(),
     (async () => {
       while (!abortFlag) {
         const isOk = await getAfragChunklist(aChunklistURL);
         if (!isOk) abortFlag = true;
-        await sleep(3000);
+        await sleep(2000);
       }
     })(),
   ]);

@@ -13,7 +13,7 @@ const pool = mysql.createPool({
 
 const app = express();
 
-const port = 3000
+const port = 3000;
 
 const VFRAG_MAP = '#EXT-X-MAP:URI="vfrag1080p_0_0_0.m4s"';
 const AFRAG_MAP = '#EXT-X-MAP:URI="afrag1080p_0_0_0.m4s"';
@@ -40,7 +40,7 @@ const getM3U8 = (fragments, map, extinf) => {
 app.use(cors());
 
 app.get('/channels', async (req, res) => {
-  const [channels] = await pool.query('SELECT id, name, profile, live_title, live_image from channel');
+  const [channels] = await pool.query('SELECT id, name, profile from channel');
   res.json(channels);
 });
 
@@ -55,9 +55,9 @@ app.get('/:channelID/vfrag.m3u8', async (req, res) => {
   const { channelID } = req.params;
   res.contentType('application/vnd.apple.mpegurl');
 
-  // const [fragments] = await pool
-  //   .query('SELECT url, program_datetime FROM fragment WHERE channel_id=? AND type="vfrag" AND created_at > (now() - interval 60 minute)', [channelID]);
-  const [fragments] = await pool.query('SELECT url, program_datetime, extinf FROM fragment WHERE channel_id=? AND type="vfrag"', [channelID]);
+   const [fragments] = await pool
+     .query('SELECT url, program_datetime, extinf FROM fragment WHERE channel_id=? AND type="vfrag" AND created_at > (now() - interval 6 hour)', [channelID]);
+  //const [fragments] = await pool.query('SELECT url, program_datetime, extinf FROM fragment WHERE channel_id=? AND type="vfrag"', [channelID]);
   const m3u8 = getM3U8(fragments, VFRAG_MAP);
   res.send(m3u8.join('\n'));
 });
@@ -65,7 +65,8 @@ app.get('/:channelID/afrag.m3u8', async (req, res) => {
   const { channelID } = req.params;
   res.contentType('application/vnd.apple.mpegurl');
 
-  const [fragments] = await pool.query('SELECT url, program_datetime, extinf FROM fragment WHERE channel_id=? AND type="afrag"', [channelID]);
+  const [fragments] = await pool.query('SELECT url, program_datetime, extinf FROM fragment WHERE channel_id=? AND type="afrag" AND created_at > (now() - interval 6 hour)', [channelID]);
+  //const [fragments] = await pool.query('SELECT url, program_datetime, extinf FROM fragment WHERE channel_id=? AND type="afrag"', [channelID]);
   const m3u8 = getM3U8(fragments, AFRAG_MAP);
   res.send(m3u8.join('\n'));
 });
@@ -80,3 +81,4 @@ app.get('/:channelID/afrag1080p_0_0_0.m4s', (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 });
+

@@ -1,17 +1,13 @@
-const path = require('path');
 const axios = require('axios');
-const mysql = require('mysql2/promise');
 const record = require('./recorder.js');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const pool = require('./db.js');
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
-});
+const axiosInstance = axios.create();
 
-const getLives = () => axios.get('https://api.chzzk.naver.com/service/v1/lives?sortType=POPULAR').then(res => res.data);
+const getLives = () => axiosInstance.get(
+  'https://api.chzzk.naver.com/service/v1/lives?sortType=POPULAR',
+  { headers: { 'User-Agent': 'Mozilla' } },
+).then(res => res.data);
 
 main();
 
@@ -36,8 +32,8 @@ async function test() {
     const { channelId, channelName, channelImageUrl } = live.channel;
 
     await pool.query(
-      'INSERT INTO channel (id, name, profile, live_title, live_image) VALUES ?',
-      [[[channelId, channelName, channelImageUrl, liveTitle, liveImageUrl]]],
+      'INSERT INTO channel (id, name, profile) VALUES ?',
+      [[[channelId, channelName, channelImageUrl]]],
     );
 
 
