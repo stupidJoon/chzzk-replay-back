@@ -2,8 +2,6 @@ const axios = require('axios');
 const record = require('./recorder.js');
 const pool = require('./db.js');
 
-const axiosInstance = axios.create();
-
 const getLives = () => axiosInstance.get(
   'https://api.chzzk.naver.com/service/v1/lives?sortType=POPULAR',
   { headers: { 'User-Agent': 'Mozilla' } },
