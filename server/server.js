@@ -51,12 +51,14 @@ app.get('/:channelID', (req, res) => {
   res.send(playlist.join('\n'));
 });
 
+const fragMinutes = 10;
+
 app.get('/:channelID/vfrag.m3u8', async (req, res) => {
   const { channelID } = req.params;
   res.contentType('application/vnd.apple.mpegurl');
 
    const [fragments] = await pool
-     .query('SELECT url, program_datetime, extinf FROM fragment WHERE channel_id=? AND type="vfrag" AND created_at > (now() - interval 6 hour)', [channelID]);
+     .query('SELECT url, program_datetime, extinf FROM fragment WHERE channel_id=? AND type="vfrag" AND created_at > (now() - interval ' + fragMinutes + ' minute)', [channelID]);
   //const [fragments] = await pool.query('SELECT url, program_datetime, extinf FROM fragment WHERE channel_id=? AND type="vfrag"', [channelID]);
   const m3u8 = getM3U8(fragments, VFRAG_MAP);
   res.send(m3u8.join('\n'));
@@ -65,7 +67,7 @@ app.get('/:channelID/afrag.m3u8', async (req, res) => {
   const { channelID } = req.params;
   res.contentType('application/vnd.apple.mpegurl');
 
-  const [fragments] = await pool.query('SELECT url, program_datetime, extinf FROM fragment WHERE channel_id=? AND type="afrag" AND created_at > (now() - interval 6 hour)', [channelID]);
+  const [fragments] = await pool.query('SELECT url, program_datetime, extinf FROM fragment WHERE channel_id=? AND type="afrag" AND created_at > (now() - interval ' + fragMinutes + ' minute)', [channelID]);
   //const [fragments] = await pool.query('SELECT url, program_datetime, extinf FROM fragment WHERE channel_id=? AND type="afrag"', [channelID]);
   const m3u8 = getM3U8(fragments, AFRAG_MAP);
   res.send(m3u8.join('\n'));
